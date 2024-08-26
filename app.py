@@ -35,27 +35,74 @@ def generate_pdf(shipment, output_dir='pdfs'):
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Shipment ID: {shipment['tracking_id']}", ln=True, align='C')
-    pdf.cell(200, 10, txt=f"Admin Name: {shipment['admin_name']}", ln=True, align='L')
-    pdf.cell(200, 10, txt=f"Request Platform: {shipment['request_platform']}", ln=True, align='L')
-    pdf.cell(200, 10, txt=f"Company Name: {shipment['company_name']}", ln=True, align='L')
-    pdf.cell(200, 10, txt="Users:", ln=True, align='L')
-    for user, token in zip(shipment['users'], shipment['token_numbers']):
-        pdf.cell(200, 10, txt=f"User: {user}, Token: {token}", ln=True, align='L')
 
-    # Add a second page with user manual
+    # Add a border to the first page
+    pdf.rect(10, 10, 190, 277)
+
+    # Add image1 at the top-left corner of the first page
+    pdf.image("image1.jpg", x=12, y=12, w=30)
+
+    # Add the image2 where the logo is
+    pdf.image("image2.jpg", x=70, y=20, w=70, h=20)
+
+    # Make Company Name and Tracking ID bold
+    pdf.set_font("Arial", size=12, style='B')
+    pdf.set_xy(20, 50)
+    pdf.cell(0, 10, txt=f"COMPANY NAME: {shipment['company_name']}", ln=True)
+    pdf.set_xy(20, 60)
+    pdf.cell(0, 10, txt=f"TRACKING ID: {shipment['tracking_id']}", ln=True)
+
+    # Reset font to regular for the table
+    pdf.set_font("Arial", size=10)
+
+    # Define starting position for the table
+    table_start_x = 10
+    table_start_y = 90
+    pdf.set_xy(table_start_x, table_start_y)
+
+    # Define column widths (ensure total width fits within the page)
+    col_width_user = 90  # Adjusted to fit within the margin (if necessary)
+    col_width_token = 90
+
+    # Draw table headers with alignment and borders
+    pdf.set_font("Arial", size=10, style='B')
+    pdf.cell(col_width_user, 10, txt="USER NAME", border=1, align='C')
+    pdf.cell(col_width_token, 10, txt="TOKEN NUMBER", border=1, align='C', ln=True)
+
+    # Add user details in the table with alignment and borders
+    pdf.set_font("Arial", size=10)
+    for user, token in zip(shipment['users'], shipment['token_numbers']):
+        pdf.cell(col_width_user, 10, txt=user, border=1, align='C')
+        pdf.cell(col_width_token, 10, txt=token, border=1, align='C', ln=True)
+
+    # Add a second page with the same image and border
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+    pdf.rect(10, 10, 190, 277)
+
+    # Add image1 at the top-left corner of the second page
+    pdf.image("image1.jpg", x=12, y=12, w=30)
+
+    # Add User Manual title in bold
+    pdf.set_font("Arial", size=12, style='B')
+    pdf.set_xy(10, 20)  # Adjust y position to fit below the image
     pdf.cell(200, 10, txt="User Manual", ln=True, align='C')
+
+    # Add User Manual content with regular font
+    pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10,
                    txt="This is the user manual for the shipment process. Please ensure that all details are correctly filled out and verify shipment information before marking it as shipped.")
+
+    # Add border to the second page (already done earlier)
+    # pdf.rect(10, 10, 190, 277)  # Optional: Reconfirm if needed
 
     # Use company name as the PDF file name
     company_name_safe = shipment['company_name'].replace(" ", "_").replace("/", "_")
     pdf_file_path = os.path.join(output_dir, f"{company_name_safe}.pdf")
     pdf.output(pdf_file_path)
     return pdf_file_path
+
+
+
 
 
 def validate_shipment(tracking_id, admin_name, request_platform, company_name, users, token_numbers):
@@ -104,7 +151,7 @@ def main():
             else:
                 st.error("Invalid role or password.")
     else:
-        st.title("Shipping and Token Management App")
+        # st.title("Shipping and Token Management App")
 
         if st.session_state['role'] == "Token Team":
             st.subheader("Token Team Dashboard")
